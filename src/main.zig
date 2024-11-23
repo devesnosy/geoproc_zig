@@ -104,7 +104,7 @@ pub fn GVec(comptime T: type, comptime N: usize, ops: fn (type) Ops_Type(T)) typ
         }
         fn scale(self: Self, other: T) Self {
             var result = Self.init(self.components);
-            for (0..N) |i| result[i] *= other;
+            for (0..N) |i| result.components[i] *= other;
             return result;
         }
         pub fn format(
@@ -125,8 +125,9 @@ pub fn main() !void {
     const b = GVec(i32, 3, Default_Ops).init(.{ 4, 5, 6 });
     const a_cross_b = a.cross_product(b);
     const a_dot_b = a.dot_product(b);
+    const a_scaled = a.scale(100);
 
-    std.debug.print("a={}, b={}, axb={}, a.b={}\n", .{ a, b, a_cross_b, a_dot_b });
+    std.debug.print("a={}, b={}, axb={}, a.b={}, a_scaled={}\n", .{ a, b, a_cross_b, a_dot_b, a_scaled });
 
     const cwd = std.fs.cwd();
     _ = try cwd.openFile("suzanne.stl", .{ .mode = .read_only });
