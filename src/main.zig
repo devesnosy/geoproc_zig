@@ -1,7 +1,26 @@
 const std = @import("std");
 
-pub fn Default_Ops(comptime T: type) type {
+// Homogenous Binary Operation Type
+pub fn HBOp_Type(comptime T: type) type {
+    return fn (T, T) T;
+}
+
+// Homogenous Unary Operation Type
+pub fn HUOp_Type(comptime T: type) type {
+    return fn (T) T;
+}
+
+pub fn Ops_Type(comptime T: type) type {
     return struct {
+        add: HBOp_Type(T),
+        sub: HBOp_Type(T),
+        mul: HBOp_Type(T),
+        div: HBOp_Type(T),
+    };
+}
+
+pub fn Default_Ops(comptime T: type) Ops_Type(T) {
+    const funcs = struct {
         fn add(a: T, b: T) T {
             return a + b;
         }
@@ -15,26 +34,21 @@ pub fn Default_Ops(comptime T: type) type {
             return a / b;
         }
     };
-}
-
-// Homogenous Binary Operation Type
-pub fn HBOp_Type(comptime T: type) type {
-    return fn (T, T) T;
-}
-
-// Homogenous Unary Operation Type
-pub fn HUOp_Type(comptime T: type) type {
-    return fn (T) T;
+    return .{
+        .add = funcs.add,
+        .sub = funcs.sub,
+        .mul = funcs.mul,
+        .div = funcs.div,
+    };
 }
 
 // Graphics Vector
-pub fn GVec(comptime T: type, comptime N: usize) type {
+pub fn GVec(comptime T: type, comptime N: usize, ops: fn (type) Ops_Type(T)) type {
     return struct {
         components: [N]T,
 
         const Self = @This();
-        // TODO: support non built-in types :/
-        const Ops = Default_Ops(T);
+        const Ops = ops(T);
 
         fn init(components: [N]T) Self {
             return .{ .components = components };
@@ -119,7 +133,7 @@ pub fn GVec(comptime T: type, comptime N: usize) type {
 }
 
 pub fn main() !void {
-    const a = GVec(i32, 3).init(.{ 1, 2, 3 });
+    const a = GVec(i32, 3, Default_Ops).init(.{ 1, 2, 3 });
     // const b = GVec(i32, 3).init(.{ 4, 5, 6 });
     // const c = a.cross_product(b);
 
