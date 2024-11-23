@@ -58,11 +58,6 @@ pub fn GVec(comptime T: type, comptime N: usize, ops: fn (type) Ops_Type(T)) typ
             for (0..N) |i| result.components[i] = op(self.components[i], other.components[i]);
             return result;
         }
-        fn unary_op(self: Self, op: HUOp_Type(T)) Self {
-            var result = Self.init(undefined);
-            for (0..N) |i| result[i] = op(self.components[i]);
-            return result;
-        }
         fn reduce(self: Self, op: HBOp_Type(T)) T {
             var result: T = self.components[0];
             for (1..N) |i| result = op(result, self.components[i]);
