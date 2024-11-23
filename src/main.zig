@@ -107,7 +107,6 @@ pub fn GVec(comptime T: type, comptime N: usize, ops: fn (type) Ops_Type(T)) typ
             for (0..N) |i| result[i] *= other;
             return result;
         }
-
         pub fn format(
             self: Self,
             comptime fmt: []const u8,
