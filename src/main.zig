@@ -108,38 +108,26 @@ pub fn GVec(comptime T: type, comptime N: usize, ops: fn (type) Ops_Type(T)) typ
             return result;
         }
 
-        // pub fn format(
-        //     self: Self,
-        //     comptime fmt: []const u8,
-        //     options: std.fmt.FormatOptions,
-        //     writer: std.fs.File.Writer,
-        // ) !void {
-        //     _ = fmt;
-        //     _ = options;
-
-        //     try writer.print("Vec({}, {}, {})", .{self.components});
-
-        //     // try writer.print("{s} ({}-", .{
-        //     //     self.name, self.birth_year,
-        //     // });
-
-        //     // if (self.death_year) |year| {
-        //     //     try writer.print("{}", .{year});
-        //     // }
-
-        //     // try writer.writeAll(")");
-        // }
+        pub fn format(
+            self: Self,
+            comptime fmt: []const u8,
+            options: std.fmt.FormatOptions,
+            writer: anytype,
+        ) !void {
+            _ = fmt;
+            _ = options;
+            try writer.print("{any}", .{self.components});
+        }
     };
 }
 
 pub fn main() !void {
     const a = GVec(i32, 3, Default_Ops).init(.{ 1, 2, 3 });
-    // const b = GVec(i32, 3).init(.{ 4, 5, 6 });
-    // const c = a.cross_product(b);
+    const b = GVec(i32, 3, Default_Ops).init(.{ 4, 5, 6 });
+    const a_cross_b = a.cross_product(b);
+    const a_dot_b = a.dot_product(b);
 
-    std.debug.print("Vec({any})\n", .{a.components});
-    // std.debug.print("Vec({}, {}, {})\n", .{ c.components[0], c.components[1], c.components[2] });
-    // std.debug.print("{}", .{a.dot_product(b)});
+    std.debug.print("a={}, b={}, axb={}, a.b={}\n", .{ a, b, a_cross_b, a_dot_b });
 
     const cwd = std.fs.cwd();
     _ = try cwd.openFile("suzanne.stl", .{ .mode = .read_only });
