@@ -45,8 +45,6 @@ pub fn Default_Ops(comptime T: type) Ops_Type(T) {
 // Graphics Vector
 pub fn GVec(comptime T: type, comptime N: usize, ops: fn (type) Ops_Type(T)) type {
     return struct {
-        components: [N]T,
-
         const Self = @This();
         const Ops = ops(T);
         const Cross_Product_Type = switch (N) {
@@ -54,6 +52,8 @@ pub fn GVec(comptime T: type, comptime N: usize, ops: fn (type) Ops_Type(T)) typ
             3 => Self,
             else => @compileError("Cross product type is only defined for 2D and 3D vectors"),
         };
+
+        components: [N]T,
 
         fn init(components: [N]T) Self {
             return .{ .components = components };
