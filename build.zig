@@ -30,6 +30,7 @@ pub fn build(b: *std.Build) void {
     b.installArtifact(lib);
 
     b.installFile("suzanne.stl", "suzanne.stl");
+    b.installFile("suzanne_ascii.stl", "suzanne_ascii.stl");
 
     const exe = b.addExecutable(.{
         .name = "geoproc_zig",
