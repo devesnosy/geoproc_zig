@@ -77,7 +77,7 @@ pub fn GVec(comptime T: type, comptime N: usize, ops: fn (type) Ops_Type(T)) typ
             return self.binary_op(other, Ops.add);
         }
         fn sub(self: Self, other: Self) Self {
-            return self.binary_op(other, Ops.add);
+            return self.binary_op(other, Ops.sub);
         }
         fn dot(self: Self, other: Self) T {
             return self.binary_op(other, Ops.mul).sum();
