@@ -153,7 +153,6 @@ pub fn Triangle3D(comptime T: type, ops: fn (type) Ops_Type(T)) type {
         pub fn init(vertices: [3]GVec_Type) Self {
             return .{ .vertices = vertices };
         }
-
         pub fn a(self: Self) GVec_Type {
             return self.vertices[0];
         }
