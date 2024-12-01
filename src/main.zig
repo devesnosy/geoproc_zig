@@ -45,93 +45,93 @@ pub fn Default_Ops(comptime T: type) Ops_Type(T) {
 // Graphics Vector
 pub fn GVec(comptime T: type, comptime N: usize, ops: fn (type) Ops_Type(T)) type {
     return struct {
-        const Self = @This();
+        const GVec_Type = @This();
         const Ops = ops(T);
         const Cross_Product_Type = switch (N) {
             2 => T,
-            3 => Self,
+            3 => GVec_Type,
             else => @compileError("Cross product type is only defined for 2D and 3D vectors"),
         };
 
         components: [N]T,
 
-        fn init(components: [N]T) Self {
+        fn init(components: [N]T) GVec_Type {
             return .{ .components = components };
         }
-        fn binary_op(self: Self, other: Self, op: HBOp_Type(T)) Self {
-            var result = Self.init(undefined);
+        fn binary_op(self: GVec_Type, other: GVec_Type, op: HBOp_Type(T)) GVec_Type {
+            var result = GVec_Type.init(undefined);
             for (0..N) |i| result.components[i] = op(self.components[i], other.components[i]);
             return result;
         }
-        fn unary_op(self: Self, op: HUOp_Type(T)) Self {
-            var result = Self.init(undefined);
+        fn unary_op(self: GVec_Type, op: HUOp_Type(T)) GVec_Type {
+            var result = GVec_Type.init(undefined);
             for (0..N) |i| result.components[i] = op(self.components[i]);
             return result;
         }
-        fn reduce(self: Self, op: HBOp_Type(T)) T {
+        fn reduce(self: GVec_Type, op: HBOp_Type(T)) T {
             var result: T = self.components[0];
             for (1..N) |i| result = op(result, self.components[i]);
             return result;
         }
-        fn add(self: Self, other: Self) Self {
+        fn add(self: GVec_Type, other: GVec_Type) GVec_Type {
             return self.binary_op(other, Ops.add);
         }
-        fn sub(self: Self, other: Self) Self {
+        fn sub(self: GVec_Type, other: GVec_Type) GVec_Type {
             return self.binary_op(other, Ops.sub);
         }
-        fn dot(self: Self, other: Self) T {
+        fn dot(self: GVec_Type, other: GVec_Type) T {
             return self.binary_op(other, Ops.mul).sum();
         }
-        fn x(self: Self) T {
+        fn x(self: GVec_Type) T {
             if (N >= 1) return self.components[0];
             @compileError("Vec has no x component");
         }
-        fn y(self: Self) T {
+        fn y(self: GVec_Type) T {
             if (N >= 2) return self.components[1];
             @compileError("Vec has no y component");
         }
-        fn z(self: Self) T {
+        fn z(self: GVec_Type) T {
             if (N >= 3) return self.components[2];
             @compileError("Vec has no z component");
         }
-        fn cross_2d(self: Self, other: Self) T {
+        fn cross_2d(self: GVec_Type, other: GVec_Type) T {
             return self.x() * other.y() - self.y() * other.x();
         }
-        fn cross_3d(self: Self, other: Self) Self {
-            return Self.init(.{
+        fn cross_3d(self: GVec_Type, other: GVec_Type) GVec_Type {
+            return GVec_Type.init(.{
                 self.y() * other.z() - self.z() * other.y(),
                 self.z() * other.x() - self.x() * other.z(),
                 self.cross_2d(other),
             });
         }
-        fn cross(self: Self, other: Self) Cross_Product_Type {
+        fn cross(self: GVec_Type, other: GVec_Type) Cross_Product_Type {
             if (Cross_Product_Type == T) return self.cross_2d(other);
-            if (Cross_Product_Type == Self) return self.cross_3d(other);
+            if (Cross_Product_Type == GVec_Type) return self.cross_3d(other);
         }
-        fn mul_s(self: Self, other: T) Self {
-            var result = Self.init(self.components);
+        fn mul_s(self: GVec_Type, other: T) GVec_Type {
+            var result = GVec_Type.init(self.components);
             for (0..N) |i| result.components[i] *= other;
             return result;
         }
-        fn div_s(self: Self, other: T) Self {
-            var result = Self.init(self.components);
+        fn div_s(self: GVec_Type, other: T) GVec_Type {
+            var result = GVec_Type.init(self.components);
             for (0..N) |i| result.components[i] /= other;
             return result;
         }
-        fn sum(self: Self) T {
+        fn sum(self: GVec_Type) T {
             return self.reduce(Ops.add);
         }
-        fn calc_len_sq(self: Self) T {
+        fn calc_len_sq(self: GVec_Type) T {
             return self.dot(self);
         }
-        fn calc_len(self: Self) T {
+        fn calc_len(self: GVec_Type) T {
             return std.math.sqrt(self.calc_len_sq());
         }
-        fn calc_normalized(self: Self) Self {
+        fn calc_normalized(self: GVec_Type) GVec_Type {
             return self.div_s(self.calc_len());
         }
         pub fn format(
-            self: Self,
+            self: GVec_Type,
             comptime fmt: []const u8,
             options: std.fmt.FormatOptions,
             writer: anytype,
@@ -140,33 +140,29 @@ pub fn GVec(comptime T: type, comptime N: usize, ops: fn (type) Ops_Type(T)) typ
             _ = options;
             try writer.print("{any}", .{self.components});
         }
-    };
-}
 
-pub fn Triangle3D(comptime T: type, ops: fn (type) Ops_Type(T)) type {
-    return struct {
-        const Self = @This();
-        const GVec_Type = GVec(T, 3, ops);
+        const Triangle = struct {
+            const Triangle_Type = @This();
+            vertices: [3]GVec_Type,
 
-        vertices: [3]GVec_Type,
-
-        pub fn init(vertices: [3]GVec_Type) Self {
-            return .{ .vertices = vertices };
-        }
-        pub fn a(self: Self) GVec_Type {
-            return self.vertices[0];
-        }
-        pub fn b(self: Self) GVec_Type {
-            return self.vertices[1];
-        }
-        pub fn c(self: Self) GVec_Type {
-            return self.vertices[2];
-        }
-        pub fn calc_normal(self: Self) GVec_Type {
-            const ab = self.b().sub(self.a());
-            const ac = self.c().sub(self.a());
-            return ab.cross(ac).calc_normalized();
-        }
+            pub fn init(vertices: [3]GVec_Type) Triangle_Type {
+                return .{ .vertices = vertices };
+            }
+            pub fn a(self: Triangle_Type) GVec_Type {
+                return self.vertices[0];
+            }
+            pub fn b(self: Triangle_Type) GVec_Type {
+                return self.vertices[1];
+            }
+            pub fn c(self: Triangle_Type) GVec_Type {
+                return self.vertices[2];
+            }
+            pub fn calc_normal(self: Triangle_Type) GVec_Type {
+                const ab = self.b().sub(self.a());
+                const ac = self.c().sub(self.a());
+                return ab.cross(ac).calc_normalized();
+            }
+        };
     };
 }
 
@@ -194,7 +190,7 @@ pub fn skip_token(reader: std.fs.File.Reader) !void {
 
 pub fn main() !void {
     const cwd = std.fs.cwd();
-    const file = try cwd.openFile("suzanne_ascii.stl", .{ .mode = .read_only });
+    const file = try cwd.openFile("suzanne.stl", .{ .mode = .read_only });
     defer file.close();
     const reader = file.reader();
     try reader.skipBytes(80, .{});
@@ -202,7 +198,7 @@ pub fn main() !void {
     const file_size = try file.getEndPos();
     const expected_binary_size = num_tris * 50 + 84;
 
-    const T3D_f32 = Triangle3D(f32, Default_Ops);
+    const T3D_f32 = GVec(f32, 3, Default_Ops).Triangle;
     const allocator = std.heap.page_allocator;
     var tris = std.ArrayList(T3D_f32).init(allocator);
     defer tris.deinit();
