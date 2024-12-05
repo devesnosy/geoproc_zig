@@ -43,33 +43,33 @@ pub fn Default_Ops(comptime T: type) Ops_Type(T) {
 }
 
 // Graphics Vector
-pub fn Vec(comptime T: type, comptime N: usize, Ops_Type_Fn: fn (type) Ops_Type(T)) type {
+pub fn Vec(comptime CType: type, comptime N: usize, Ops_Type_Fn: fn (type) Ops_Type(CType)) type {
     return struct {
         const VType = @This();
-        const OType = Ops_Type_Fn(T);
+        const OType = Ops_Type_Fn(CType);
         const CPType = switch (N) {
-            2 => T,
+            2 => CType,
             3 => VType,
             else => @compileError("Cross product type is only defined for 2D and 3D vectors"),
         };
 
-        components: [N]T,
+        components: [N]CType,
 
-        fn init(components: [N]T) VType {
+        fn init(components: [N]CType) VType {
             return .{ .components = components };
         }
-        fn binary_op(self: VType, other: VType, op: HBOp_Type(T)) VType {
+        fn binary_op(self: VType, other: VType, op: HBOp_Type(CType)) VType {
             var result = VType.init(undefined);
             for (0..N) |i| result.components[i] = op(self.components[i], other.components[i]);
             return result;
         }
-        fn unary_op(self: VType, op: HUOp_Type(T)) VType {
+        fn unary_op(self: VType, op: HUOp_Type(CType)) VType {
             var result = VType.init(undefined);
             for (0..N) |i| result.components[i] = op(self.components[i]);
             return result;
         }
-        fn reduce(self: VType, op: HBOp_Type(T)) T {
-            var result: T = self.components[0];
+        fn reduce(self: VType, op: HBOp_Type(CType)) CType {
+            var result: CType = self.components[0];
             for (1..N) |i| result = op(result, self.components[i]);
             return result;
         }
@@ -79,22 +79,22 @@ pub fn Vec(comptime T: type, comptime N: usize, Ops_Type_Fn: fn (type) Ops_Type(
         fn sub(self: VType, other: VType) VType {
             return self.binary_op(other, OType.sub);
         }
-        fn dot(self: VType, other: VType) T {
+        fn dot(self: VType, other: VType) CType {
             return self.binary_op(other, OType.mul).sum();
         }
-        fn x(self: VType) T {
+        fn x(self: VType) CType {
             if (N >= 1) return self.components[0];
             @compileError("Vec has no x component");
         }
-        fn y(self: VType) T {
+        fn y(self: VType) CType {
             if (N >= 2) return self.components[1];
             @compileError("Vec has no y component");
         }
-        fn z(self: VType) T {
+        fn z(self: VType) CType {
             if (N >= 3) return self.components[2];
             @compileError("Vec has no z component");
         }
-        fn cross_2d(self: VType, other: VType) T {
+        fn cross_2d(self: VType, other: VType) CType {
             return OType.sub(OType.mul(self.x(), other.y()), OType.mul(self.y(), other.x()));
         }
         fn cross_3d(self: VType, other: VType) VType {
@@ -105,26 +105,26 @@ pub fn Vec(comptime T: type, comptime N: usize, Ops_Type_Fn: fn (type) Ops_Type(
             });
         }
         fn cross(self: VType, other: VType) CPType {
-            if (CPType == T) return self.cross_2d(other);
+            if (CPType == CType) return self.cross_2d(other);
             if (CPType == VType) return self.cross_3d(other);
         }
-        fn mul_s(self: VType, other: T) VType {
+        fn mul_s(self: VType, other: CType) VType {
             var result = VType.init(self.components);
             for (0..N) |i| result.components[i] = OType.mul(result.components[i], other);
             return result;
         }
-        fn div_s(self: VType, other: T) VType {
+        fn div_s(self: VType, other: CType) VType {
             var result = VType.init(self.components);
             for (0..N) |i| result.components[i] = OType.div(result.components[i], other);
             return result;
         }
-        fn sum(self: VType) T {
+        fn sum(self: VType) CType {
             return self.reduce(OType.add);
         }
-        fn calc_len_sq(self: VType) T {
+        fn calc_len_sq(self: VType) CType {
             return self.dot(self);
         }
-        fn calc_len(self: VType) T {
+        fn calc_len(self: VType) CType {
             return std.math.sqrt(self.calc_len_sq());
         }
         fn calc_normalized(self: VType) VType {
@@ -157,10 +157,13 @@ pub fn Vec(comptime T: type, comptime N: usize, Ops_Type_Fn: fn (type) Ops_Type(
             pub fn c(self: TType) VType {
                 return self.vertices[2];
             }
-            pub fn calc_normal(self: TType) VType {
+            pub fn calc_area_vec(self: TType) VType {
                 const ab = self.b().sub(self.a());
                 const ac = self.c().sub(self.a());
-                return ab.cross(ac).calc_normalized();
+                return ab.cross(ac);
+            }
+            pub fn calc_normal(self: TType) VType {
+                return self.calc_area_vec().calc_normalized();
             }
         };
     };
