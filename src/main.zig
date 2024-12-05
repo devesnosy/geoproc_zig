@@ -189,8 +189,11 @@ pub fn skip_token(reader: std.fs.File.Reader) !void {
 }
 
 pub fn main() !void {
+    var args = std.process.args();
+    _ = args.skip();
+    const input_mesh_filepath = args.next() orelse unreachable;
     const cwd = std.fs.cwd();
-    const file = try cwd.openFile("suzanne.stl", .{ .mode = .read_only });
+    const file = try cwd.openFile(input_mesh_filepath, .{ .mode = .read_only });
     defer file.close();
     const reader = file.reader();
     try reader.skipBytes(80, .{});
