@@ -36,7 +36,6 @@ pub fn read_stl(mesh_filepath: []const u8, allocator: std.mem.Allocator) !std.Ar
     const expected_binary_size = num_tris * 50 + 84;
 
     var tris = std.ArrayList(TType).init(allocator);
-    defer tris.deinit();
 
     if (file_size == expected_binary_size) {
         std.debug.print("Binary\n", .{});
