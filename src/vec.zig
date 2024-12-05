@@ -1,12 +1,12 @@
 const std = @import("std");
 
 // Homogenous Binary Operation Type
-pub fn HBOp_Type(comptime T: type) type {
+fn HBOp_Type(comptime T: type) type {
     return fn (T, T) T;
 }
 
 // Homogenous Unary Operation Type
-pub fn HUOp_Type(comptime T: type) type {
+fn HUOp_Type(comptime T: type) type {
     return fn (T) T;
 }
 
@@ -21,16 +21,16 @@ pub fn Ops_Type(comptime T: type) type {
 
 pub fn Default_Ops(comptime T: type) Ops_Type(T) {
     const funcs = struct {
-        fn add(a: T, b: T) T {
+        pub fn add(a: T, b: T) T {
             return a + b;
         }
-        fn sub(a: T, b: T) T {
+        pub fn sub(a: T, b: T) T {
             return a - b;
         }
-        fn mul(a: T, b: T) T {
+        pub fn mul(a: T, b: T) T {
             return a * b;
         }
-        fn div(a: T, b: T) T {
+        pub fn div(a: T, b: T) T {
             return a / b;
         }
     };
@@ -55,42 +55,42 @@ pub fn Vec(comptime CType: type, comptime N: usize, Ops_Type_Fn: fn (type) Ops_T
 
         components: [N]CType,
 
-        fn init(components: [N]CType) VType {
+        pub fn init(components: [N]CType) VType {
             return .{ .components = components };
         }
-        fn binary_op(self: VType, other: VType, op: HBOp_Type(CType)) VType {
+        pub fn binary_op(self: VType, other: VType, op: HBOp_Type(CType)) VType {
             var result = VType.init(undefined);
             for (0..N) |i| result.components[i] = op(self.components[i], other.components[i]);
             return result;
         }
-        fn unary_op(self: VType, op: HUOp_Type(CType)) VType {
+        pub fn unary_op(self: VType, op: HUOp_Type(CType)) VType {
             var result = VType.init(undefined);
             for (0..N) |i| result.components[i] = op(self.components[i]);
             return result;
         }
-        fn reduce(self: VType, op: HBOp_Type(CType)) CType {
+        pub fn reduce(self: VType, op: HBOp_Type(CType)) CType {
             var result: CType = self.components[0];
             for (1..N) |i| result = op(result, self.components[i]);
             return result;
         }
-        fn add(self: VType, other: VType) VType {
+        pub fn add(self: VType, other: VType) VType {
             return self.binary_op(other, OType.add);
         }
-        fn sub(self: VType, other: VType) VType {
+        pub fn sub(self: VType, other: VType) VType {
             return self.binary_op(other, OType.sub);
         }
-        fn dot(self: VType, other: VType) CType {
+        pub fn dot(self: VType, other: VType) CType {
             return self.binary_op(other, OType.mul).sum();
         }
-        fn x(self: VType) CType {
+        pub fn x(self: VType) CType {
             if (N >= 1) return self.components[0];
             @compileError("Vec has no x component");
         }
-        fn y(self: VType) CType {
+        pub fn y(self: VType) CType {
             if (N >= 2) return self.components[1];
             @compileError("Vec has no y component");
         }
-        fn z(self: VType) CType {
+        pub fn z(self: VType) CType {
             if (N >= 3) return self.components[2];
             @compileError("Vec has no z component");
         }
@@ -104,30 +104,30 @@ pub fn Vec(comptime CType: type, comptime N: usize, Ops_Type_Fn: fn (type) Ops_T
                 self.cross_2d(other),
             });
         }
-        fn cross(self: VType, other: VType) CPType {
+        pub fn cross(self: VType, other: VType) CPType {
             if (CPType == CType) return self.cross_2d(other);
             if (CPType == VType) return self.cross_3d(other);
         }
-        fn mul_s(self: VType, other: CType) VType {
+        pub fn mul_s(self: VType, other: CType) VType {
             var result = VType.init(self.components);
             for (0..N) |i| result.components[i] = OType.mul(result.components[i], other);
             return result;
         }
-        fn div_s(self: VType, other: CType) VType {
+        pub fn div_s(self: VType, other: CType) VType {
             var result = VType.init(self.components);
             for (0..N) |i| result.components[i] = OType.div(result.components[i], other);
             return result;
         }
-        fn sum(self: VType) CType {
+        pub fn sum(self: VType) CType {
             return self.reduce(OType.add);
         }
-        fn calc_len_sq(self: VType) CType {
+        pub fn calc_len_sq(self: VType) CType {
             return self.dot(self);
         }
-        fn calc_len(self: VType) CType {
+        pub fn calc_len(self: VType) CType {
             return std.math.sqrt(self.calc_len_sq());
         }
-        fn calc_normalized(self: VType) VType {
+        pub fn calc_normalized(self: VType) VType {
             return self.div_s(self.calc_len());
         }
         pub fn format(
