@@ -15,13 +15,13 @@ pub fn build(b: *std.Build) void {
     // set a preferred release mode, allowing the user to decide how to optimize.
     const optimize = b.standardOptimizeOption(.{});
 
-    const gvec_lib = b.addStaticLibrary(.{
-        .name = "gvec",
-        .root_source_file = b.path("src/gvec.zig"),
+    const vec_lib = b.addStaticLibrary(.{
+        .name = "vec",
+        .root_source_file = b.path("src/vec.zig"),
         .target = target,
         .optimize = optimize,
     });
-    b.installArtifact(gvec_lib);
+    b.installArtifact(vec_lib);
 
     const stl_io_lib = b.addStaticLibrary(.{
         .name = "stl_io",

@@ -1,7 +1,7 @@
 const std = @import("std");
-const gvec = @import("gvec.zig");
+const vec = @import("vec.zig");
 
-const T3D_f32 = gvec.GVec(f32, 3, gvec.Default_Ops).Triangle;
+const TType = vec.Vec(f32, 3, vec.Default_Ops).Triangle;
 
 fn read_token(reader: std.fs.File.Reader, optional_out: ?*std.ArrayList(u8)) !void {
     if (optional_out) |out| out.clearRetainingCapacity();
@@ -25,7 +25,7 @@ fn skip_token(reader: std.fs.File.Reader) !void {
     try read_token(reader, null);
 }
 
-pub fn read_stl(mesh_filepath: []const u8, allocator: std.mem.Allocator) !std.ArrayList(T3D_f32) {
+pub fn read_stl(mesh_filepath: []const u8, allocator: std.mem.Allocator) !std.ArrayList(TType) {
     const cwd = std.fs.cwd();
     const file = try cwd.openFile(mesh_filepath, .{ .mode = .read_only });
     defer file.close();
@@ -35,14 +35,14 @@ pub fn read_stl(mesh_filepath: []const u8, allocator: std.mem.Allocator) !std.Ar
     const file_size = try file.getEndPos();
     const expected_binary_size = num_tris * 50 + 84;
 
-    var tris = std.ArrayList(T3D_f32).init(allocator);
+    var tris = std.ArrayList(TType).init(allocator);
     defer tris.deinit();
 
     if (file_size == expected_binary_size) {
         std.debug.print("Binary\n", .{});
         for (0..num_tris) |_| {
             try reader.skipBytes(12, .{}); // Skip normal
-            var t = T3D_f32.init(undefined);
+            var t = TType.init(undefined);
             for (0..3) |i| {
                 const x: f32 = @bitCast(try reader.readInt(i32, .little));
                 const y: f32 = @bitCast(try reader.readInt(i32, .little));
@@ -67,7 +67,7 @@ pub fn read_stl(mesh_filepath: []const u8, allocator: std.mem.Allocator) !std.Ar
                 for (0..3) |_| try skip_token(reader); // Skip components of 3D normal vector
                 try skip_token(reader); // Expecting "outer"
                 try skip_token(reader); // Expecting "loop"
-                var t = T3D_f32.init(undefined);
+                var t = TType.init(undefined);
                 for (0..3) |i| {
                     try skip_token(reader); // Expecting "vertex"
 
