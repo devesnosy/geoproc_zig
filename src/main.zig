@@ -95,12 +95,12 @@ pub fn GVec(comptime T: type, comptime N: usize, ops: fn (type) Ops_Type(T)) typ
             @compileError("Vec has no z component");
         }
         fn cross_2d(self: GVec_Type, other: GVec_Type) T {
-            return self.x() * other.y() - self.y() * other.x();
+            return Ops.sub(Ops.mul(self.x(), other.y()), Ops.mul(self.y(), other.x()));
         }
         fn cross_3d(self: GVec_Type, other: GVec_Type) GVec_Type {
             return GVec_Type.init(.{
-                self.y() * other.z() - self.z() * other.y(),
-                self.z() * other.x() - self.x() * other.z(),
+                Ops.sub(Ops.mul(self.y(), other.z()), Ops.mul(self.z(), other.y())),
+                Ops.sub(Ops.mul(self.z(), other.x()), Ops.mul(self.x(), other.z())),
                 self.cross_2d(other),
             });
         }
@@ -110,12 +110,12 @@ pub fn GVec(comptime T: type, comptime N: usize, ops: fn (type) Ops_Type(T)) typ
         }
         fn mul_s(self: GVec_Type, other: T) GVec_Type {
             var result = GVec_Type.init(self.components);
-            for (0..N) |i| result.components[i] *= other;
+            for (0..N) |i| result.components[i] = Ops.mul(result.components[i], other);
             return result;
         }
         fn div_s(self: GVec_Type, other: T) GVec_Type {
             var result = GVec_Type.init(self.components);
-            for (0..N) |i| result.components[i] /= other;
+            for (0..N) |i| result.components[i] = Ops.div(result.components[i], other);
             return result;
         }
         fn sum(self: GVec_Type) T {
