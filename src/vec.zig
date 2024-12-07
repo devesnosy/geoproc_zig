@@ -157,13 +157,16 @@ pub fn Vec(comptime CType: type, comptime N: usize, Ops_Type_Fn: fn (type) Ops_T
             pub fn c(self: TType) VType {
                 return self.vertices[2];
             }
-            pub fn calc_area_vec(self: TType) VType {
+            pub fn calc_twice_area_vec(self: TType) VType {
                 const ab = self.b().sub(self.a());
                 const ac = self.c().sub(self.a());
                 return ab.cross(ac);
             }
+            pub fn calc_twice_area(self: TType) CType {
+                return self.calc_twice_area_vec().calc_len();
+            }
             pub fn calc_normal(self: TType) VType {
-                return self.calc_area_vec().calc_normalized();
+                return self.calc_twice_area_vec().calc_normalized();
             }
         };
     };
