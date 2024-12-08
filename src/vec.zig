@@ -10,7 +10,7 @@ fn HUOp_Type(comptime T: type) type {
     return fn (T) T;
 }
 
-pub fn Ops_Type(comptime T: type) type {
+pub fn IOps_Type(comptime T: type) type {
     return struct {
         add: HBOp_Type(T),
         sub: HBOp_Type(T),
@@ -19,7 +19,7 @@ pub fn Ops_Type(comptime T: type) type {
     };
 }
 
-pub fn Default_Ops(comptime T: type) Ops_Type(T) {
+pub fn Default_Ops(comptime T: type) IOps_Type(T) {
     const funcs = struct {
         pub fn add(a: T, b: T) T {
             return a + b;
@@ -43,10 +43,10 @@ pub fn Default_Ops(comptime T: type) Ops_Type(T) {
 }
 
 // Graphics Vector
-pub fn Vec(comptime CType: type, comptime N: usize, Ops_Type_Fn: fn (type) Ops_Type(CType)) type {
+pub fn Vec(comptime CType: type, comptime N: usize, Ops_Type_Fn: fn (type) IOps_Type(CType)) type {
     return struct {
         const VType = @This();
-        const OType = Ops_Type_Fn(CType);
+        const Ops_Type = Ops_Type_Fn(CType);
         const CPType = switch (N) {
             2 => CType,
             3 => VType,
@@ -74,13 +74,13 @@ pub fn Vec(comptime CType: type, comptime N: usize, Ops_Type_Fn: fn (type) Ops_T
             return result;
         }
         pub fn add(self: VType, other: VType) VType {
-            return self.binary_op(other, OType.add);
+            return self.binary_op(other, Ops_Type.add);
         }
         pub fn sub(self: VType, other: VType) VType {
-            return self.binary_op(other, OType.sub);
+            return self.binary_op(other, Ops_Type.sub);
         }
         pub fn dot(self: VType, other: VType) CType {
-            return self.binary_op(other, OType.mul).sum();
+            return self.binary_op(other, Ops_Type.mul).sum();
         }
         pub fn x(self: VType) CType {
             if (N >= 1) return self.components[0];
@@ -95,12 +95,12 @@ pub fn Vec(comptime CType: type, comptime N: usize, Ops_Type_Fn: fn (type) Ops_T
             @compileError("Vec has no z component");
         }
         fn cross_2d(self: VType, other: VType) CType {
-            return OType.sub(OType.mul(self.x(), other.y()), OType.mul(self.y(), other.x()));
+            return Ops_Type.sub(Ops_Type.mul(self.x(), other.y()), Ops_Type.mul(self.y(), other.x()));
         }
         fn cross_3d(self: VType, other: VType) VType {
             return VType.init(.{
-                OType.sub(OType.mul(self.y(), other.z()), OType.mul(self.z(), other.y())),
-                OType.sub(OType.mul(self.z(), other.x()), OType.mul(self.x(), other.z())),
+                Ops_Type.sub(Ops_Type.mul(self.y(), other.z()), Ops_Type.mul(self.z(), other.y())),
+                Ops_Type.sub(Ops_Type.mul(self.z(), other.x()), Ops_Type.mul(self.x(), other.z())),
                 self.cross_2d(other),
             });
         }
@@ -110,16 +110,16 @@ pub fn Vec(comptime CType: type, comptime N: usize, Ops_Type_Fn: fn (type) Ops_T
         }
         pub fn mul_s(self: VType, other: CType) VType {
             var result = VType.init(self.components);
-            for (0..N) |i| result.components[i] = OType.mul(result.components[i], other);
+            for (0..N) |i| result.components[i] = Ops_Type.mul(result.components[i], other);
             return result;
         }
         pub fn div_s(self: VType, other: CType) VType {
             var result = VType.init(self.components);
-            for (0..N) |i| result.components[i] = OType.div(result.components[i], other);
+            for (0..N) |i| result.components[i] = Ops_Type.div(result.components[i], other);
             return result;
         }
         pub fn sum(self: VType) CType {
-            return self.reduce(OType.add);
+            return self.reduce(Ops_Type.add);
         }
         pub fn calc_len_sq(self: VType) CType {
             return self.dot(self);
@@ -167,6 +167,32 @@ pub fn Vec(comptime CType: type, comptime N: usize, Ops_Type_Fn: fn (type) Ops_T
             }
             pub fn calc_normal(self: TType) VType {
                 return self.calc_twice_area_vec().calc_normalized();
+            }
+        };
+
+        pub const Ray = struct {
+            const RType = @This();
+            origin: VType,
+            direction: VType,
+
+            pub fn init(origin: [N]CType, direction: [N]CType) RType {
+                return .{
+                    .origin = origin,
+                    .direction = direction,
+                };
+            }
+        };
+
+        pub const AABB = struct {
+            const AABBType = @This();
+            min: VType,
+            max: VType,
+
+            pub fn init(min: [N]CType, max: [N]CType) AABBType {
+                return .{
+                    .min = min,
+                    .max = max,
+                };
             }
         };
     };
