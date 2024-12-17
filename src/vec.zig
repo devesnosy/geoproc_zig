@@ -42,7 +42,6 @@ pub fn Default_Ops(comptime T: type) IOps_Type(T) {
     };
 }
 
-// Graphics Vector
 pub fn Vec(comptime CType: type, comptime N: usize, Ops_Type_Fn: fn (type) IOps_Type(CType)) type {
     return struct {
         const VType = @This();
