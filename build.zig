@@ -41,8 +41,8 @@ pub fn build(b: *std.Build) void {
     b.installFile("suzanne_ascii.stl", "suzanne_ascii.stl");
 
     const exe = b.addExecutable(.{
-        .name = "geoproc_zig",
-        .root_source_file = b.path("src/main.zig"),
+        .name = "sample_surface",
+        .root_source_file = b.path("src/sample_surface.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -85,7 +85,7 @@ pub fn build(b: *std.Build) void {
     const run_stl_io_lib_unit_tests = b.addRunArtifact(stl_io_lib_unit_tests);
 
     const exe_unit_tests = b.addTest(.{
-        .root_source_file = b.path("src/main.zig"),
+        .root_source_file = b.path("src/sample_surface.zig"),
         .target = target,
         .optimize = optimize,
     });
