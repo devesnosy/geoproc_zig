@@ -42,6 +42,8 @@ pub fn Default_Ops(comptime T: type) IOps_Type(T) {
     };
 }
 
+// TODO: we should probably make a "tensor" type? so that it can represent matrices and vectors?
+// or just a 2D matrix type so that it can represent vectors and matrices, hmmm
 pub fn Vec(comptime CType: type, comptime N: usize, Ops_Type_Fn: fn (type) IOps_Type(CType)) type {
     return struct {
         const VType = @This();
