@@ -40,6 +40,14 @@ pub fn build(b: *std.Build) void {
     b.installFile("suzanne.stl", "suzanne.stl");
     b.installFile("suzanne_ascii.stl", "suzanne_ascii.stl");
 
+    const playground_exe = b.addExecutable(.{
+        .name = "playground",
+        .root_source_file = b.path("src/playground.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    b.installArtifact(playground_exe);
+
     const exe = b.addExecutable(.{
         .name = "sample_surface",
         .root_source_file = b.path("src/sample_surface.zig"),

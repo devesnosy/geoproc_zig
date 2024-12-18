@@ -3,7 +3,7 @@ const stl_io = @import("stl_io.zig");
 const vec = @import("vec.zig");
 
 const PRNG = std.Random.DefaultPrng;
-const Point2f = vec.Vec(f32, 2, vec.Default_Ops);
+const Point2f = vec.Vec(f32, 2, vec.Default_Num_Type_Info);
 
 fn uniform_sample_triangle(zeta: Point2f) Point2f {
     const su0 = std.math.sqrt(zeta.x());

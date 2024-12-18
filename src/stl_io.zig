@@ -1,7 +1,7 @@
 const std = @import("std");
 const vec = @import("vec.zig");
 
-pub const TType = vec.Vec(f32, 3, vec.Default_Ops).Triangle;
+pub const TType = vec.Vec(f32, 3, vec.Default_Num_Type_Info).Triangle;
 
 fn read_token(reader: std.fs.File.Reader, optional_out: ?*std.ArrayList(u8)) !void {
     if (optional_out) |out| out.clearRetainingCapacity();
